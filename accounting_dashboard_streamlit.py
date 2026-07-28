@@ -604,8 +604,11 @@ flow_df = pd.DataFrame(
         "Metric": ["CFO", "CFI", "CFF"],
         "Amount": [cfo, cfi, cff],
     }
-).set_index("Metric")
-st.bar_chart(flow_df)
+)
+try:
+    st.bar_chart(flow_df.set_index("Metric")["Amount"])
+except Exception:
+    st.dataframe(flow_df, use_container_width=True, hide_index=True)
 
 st.markdown('<div class="section-header">KPI summary</div>', unsafe_allow_html=True)
 metric_df = pd.DataFrame([summary]).T.rename(columns={0: "Value"})
