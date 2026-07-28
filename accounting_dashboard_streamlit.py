@@ -503,10 +503,21 @@ else:
     equity_capital = live_data.get("equity_capital", None)
     dividend_payout = live_data.get("dividend_payout", None)
 
-    if "inventory_days" in live_data and cogs:
-        inventory = live_data.get("inventory", cogs * live_data["inventory_days"] / 365)
-    if "receivable_days" in live_data and revenue:
-        receivables = live_data.get("receivables", revenue * live_data["receivable_days"] / 365)
+    inventory_value = live_data.get("inventory")
+    if inventory_value is not None:
+        inventory = inventory_value
+    elif "inventory_days" in live_data and cogs is not None and live_data.get("inventory_days") is not None:
+        inventory = cogs * live_data["inventory_days"] / 365.0
+    else:
+        inventory = None
+
+    receivables_value = live_data.get("receivables")
+    if receivables_value is not None:
+        receivables = receivables_value
+    elif "receivable_days" in live_data and revenue is not None and live_data.get("receivable_days") is not None:
+        receivables = revenue * live_data["receivable_days"] / 365.0
+    else:
+        receivables = None
 
 if live_data:
     if live_source == "MCP":
@@ -533,13 +544,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-sales_growth = (revenue - prior_revenue) / prior_revenue if prior_revenue else 0.0
-opm = operating_profit / revenue if revenue else 0.0
-gross_profit = revenue - cogs
-gross_profit_margin = gross_profit / revenue if revenue else 0.0
-inventory_days = (inventory / cogs * 365) if cogs else 0.0
-receivable_turnover = revenue / receivables if receivables else 0.0
-receivable_days = 365 / receivable_turnover if receivable_turnover else 0.0
+sales_growth = ((revenue - prior_revenue) / prior_revenue) if (revenue is not None and prior_revenue not in (None, 0)) else 0.0
+opm = (operating_profit / revenue) if (operating_profit is not None and revenue not in (None, 0)) else 0.0
+gross_profit = (revenue - cogs) if (revenue is not None and cogs is not None) else None
+gross_profit_margin = (gross_profit / revenue) if (gross_profit is not None and revenue not in (None, 0)) else 0.0
+inventory_days = (inventory / cogs * 365) if (inventory is not None and cogs not in (None, 0)) else 0.0
+receivable_turnover = (revenue / receivables) if (revenue is not None and receivables not in (None, 0)) else 0.0
+receivable_days = (365 / receivable_turnover) if (receivable_turnover not in (None, 0)) else 0.0
 
 bse_code = sample_company_data.get(company_name, {}).get("bse_code", "N/A")
 
