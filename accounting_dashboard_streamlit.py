@@ -242,8 +242,12 @@ def fetch_screener_company_data(ticker: str) -> Tuple[Dict[str, float], Optional
                 continue
             label = row[0].lower().replace("\xa0", " ").replace("&nbsp;", " ").strip()
             values = [parse_number(col) for col in row[1:]]
-            latest = values[0] if values else None
-            prior = values[1] if len(values) > 1 else None
+            latest = next((v for v in reversed(values) if v is not None), None)
+            prior = None
+            if latest is not None:
+                reversed_values = list(reversed(values))
+                remaining = reversed_values[1:]
+                prior = next((v for v in remaining if v is not None), None)
 
             if "sales +" in label:
                 if latest is not None:
